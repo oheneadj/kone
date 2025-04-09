@@ -1,6 +1,6 @@
 # Kone CMS 🧩
 
-<img src="/kone-transparent.png" alt="Kone CMS Logo" width="200" />
+<img src="/public/kone-transparent.png" alt="Kone CMS Logo" width="200" />
 
 **Kone** is a custom CMS designed specifically for building and managing **affiliate marketing websites**. Built with Laravel 12, FilamentPHP, Livewire, Tailwind CSS, and FluxUI, it offers an elegant and developer-friendly platform to streamline content management and affiliate link tracking.
 
