@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use App\Enum\StatusEnum;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -18,9 +19,8 @@ return new class extends Migration
             $table->string('url')->unique();
             $table->string('thumbnail')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('category_id')->constrained()->onDelete('cascade');
-            $table->foreignId('tag_id')->constrained()->onDelete('cascade');
-            $table->enum('status', ['draft', 'published', 'disabled'])->default('published');
+            $table->enum('status', ['published', 'draft', 'archived'])
+                ->default('published');
             $table->dateTime('published_at')->nullable();
             $table->integer('views')->default(0);
             $table->string('video_id')->unique();

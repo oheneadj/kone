@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use App\Enum\StatusEnum;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -14,11 +15,17 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+            $table->string('featured_image')->nullable();
+            $table->string('excerpt')->nullable();
             $table->longText('content');
             $table->string('slug')->unique();
             $table->foreignId('user_id')->constrained();
-            $table->enum('status', ['draft', 'published', 'disabled'])->default('published');
-            $table->dateTime('published_at')->nullable();
+            $table->enum('status', ['published', 'draft', 'archived'])
+                ->default('published');
+            $table->json('tags')->nullable();
+            $table->dateTime('published_at')->nullable()->default(now());
+            $table->integer('views')->default(0);
+            $table->boolean('is_featured')->default(false);
             $table->timestamps();
         });
     }

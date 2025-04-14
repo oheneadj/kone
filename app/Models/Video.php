@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Video extends Model
 {
@@ -16,8 +18,6 @@ class Video extends Model
         'url',
         'thumbnail',
         'user_id',
-        'category_id',
-        'tag_id',
         'status',
         'published_at',
         'views',
@@ -31,18 +31,26 @@ class Video extends Model
         'views' => 'integer',
     ];
 
-
-    public function user()
+    /**
+     * Get the user that owns the video.
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
-    public function category()
+    /**
+     * Get the categories for the video.
+     */
+    public function categories(): BelongsToMany
     {
-        return $this->belongsTo(Category::class);
+        return $this->BelongsToMany(Category::class);
     }
-    public function tag()
+    /**
+     * Get the tags for the video.
+     */
+    public function tag(): BelongsToMany
     {
-        return $this->belongsTo(Tag::class);
+        return $this->BelongsToMany(Tag::class);
     }
 
     public function getRouteKeyName()

@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use App\Enum\StatusEnum;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -16,7 +17,8 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->string('slug')->unique();
             $table->foreignId('category_id')->constrained()->nullable();
-            $table->enum('status', ['draft', 'published', 'disabled'])->default('published');
+            $table->enum('status', ['published', 'draft', 'archived'])
+                ->default('published');
             $table->dateTime('published_at')->nullable();
             $table->timestamps();
         });
