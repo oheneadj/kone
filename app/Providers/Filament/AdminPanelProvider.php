@@ -27,9 +27,18 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandLogo(asset('/kone-transparent.png'))
+            ->brandLogoHeight('5rem')
             ->colors([
-                'primary' => Color::Amber,
+                'danger' => '#EF4444',  // Soft Red
+                'gray' => '#1E1E1E',    // Dark Mode Background
+                'info' => '#3B82F6',    // Sky Blue (Info color)
+                'primary' => '#6A0DFF', // Electric Purple
+                'success' => '#10B981', // Emerald Green
+                'warning' => '#4F46E5', // Indigo (for energetic look)
             ])
+            ->favicon(asset('/kone-transparent.png'))
+
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
