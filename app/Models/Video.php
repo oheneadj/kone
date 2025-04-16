@@ -23,6 +23,7 @@ class Video extends Model
         'views',
         'video_id',
         'video_type',
+        'tag',
     ];
 
     //
@@ -48,13 +49,26 @@ class Video extends Model
     /**
      * Get the tags for the video.
      */
-    public function tag(): BelongsToMany
-    {
-        return $this->BelongsToMany(Tag::class);
-    }
+
 
     public function getRouteKeyName()
     {
-        return 'slug';
+        return 'video_id';
+    }
+
+
+    public static function boot()
+    {
+        parent::boot();
+
+        //add user id to the video before saving
+
+        static::creating(function ($video) {
+            $video->user_id = auth()->id();
+        });
+        //add user id to the video before updating
+        static::updating(function ($video) {
+            $video->user_id = auth()->id();
+        });
     }
 }

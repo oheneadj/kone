@@ -16,10 +16,11 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('slug')->unique();
-            $table->foreignId('category_id')->constrained()->nullable();
+            $table->foreignId('category_id')->nullable()->constrained();
             $table->enum('status', ['published', 'draft', 'archived'])
                 ->default('published');
-            $table->dateTime('published_at')->nullable();
+            $table->boolean('is_featured')->default(false);
+            $table->dateTime('published_at')->nullable()->default(now());
             $table->timestamps();
         });
     }

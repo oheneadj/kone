@@ -40,7 +40,7 @@ class Post extends Model
     // Define the relationship with the Category model
     public function categories(): BelongsToMany
     {
-        return $this->belongsToMany(Category::class);
+        return $this->belongsToMany(Category::class, 'catergory_post');
     }
 
     //add auth user to the post before saving

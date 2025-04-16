@@ -5,19 +5,27 @@ namespace App\Filament\Resources;
 use Filament\Forms;
 use App\Models\Post;
 use Filament\Tables;
+use App\Models\Category;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Section;
 use Filament\Support\Enums\FontWeight;
+use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\MarkdownEditor;
 use App\Filament\Resources\PostResource\Pages;
@@ -34,89 +42,165 @@ class PostResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('title')
-                    ->required()
-                    ->maxLength(255)
-                    ->label('Title'),
-                TextInput::make('slug')
-                    ->required()
-                    ->maxLength(255)
-                    ->label('Slug'),
-                RichEditor::make('content')
-                    ->toolbarButtons([
-                        'attachFiles',
-                        'blockquote',
-                        'bold',
-                        'bulletList',
-                        'codeBlock',
-                        'h2',
-                        'h3',
-                        'italic',
-                        'link',
-                        'orderedList',
-                        'redo',
-                        'strike',
-                        'underline',
-                        'undo',
+                Section::make('Post')
+                    ->description('Create a new post')
+                    ->schema([
+                        TextInput::make('title')
+                            ->required()
+                            ->label('Title')
+                            ->placeholder('Enter post title')
+                            ->maxLength(255)
+                            ->unique(Post::class, 'slug', ignoreRecord: true)
+                            ->reactive()
+                            ->afterStateUpdated(function (callable $set, $state) {
+                                $set('slug', \Illuminate\Support\Str::slug($state));
+                            }),
+                        TextInput::make('slug')
+                            ->required()
+                            ->readOnly()
+                            ->label('Slug')
+                            ->placeholder('Enter post slug')
+                            ->maxLength(255)
+                            ->unique(Post::class, 'slug', ignoreRecord: true),
+                        Select::make('category_id')
+                            ->label('Parent Category')
+                            ->searchable()
+                            ->relationship('categories', 'name')
+                            ->multiple()
+                            ->required()
+                            ->label('Categories')
+                            ->createOptionForm([
+                                TextInput::make('name')
+                                    ->required()
+                                    ->label('Category Name')
+                                    ->placeholder('Enter category name')
+                                    ->maxLength(120)
+                                    ->unique(Category::class, 'slug', ignoreRecord: true)
+                                    ->reactive()
+                                    ->afterStateUpdated(function (callable $set, $state) {
+                                        $set('slug', \Illuminate\Support\Str::slug($state));
+                                    }),
+                                TextInput::make('slug')
+                                    ->required()
+                                    ->readOnly()
+                                    ->label('Slug')
+                                    ->placeholder('slug')
+                                    ->maxLength(255)
+                                    ->unique(Category::class, 'slug', ignoreRecord: true),
+                                Select::make('category_id')
+                                    ->label('Parent Category')
+                                    ->searchable()
+                                    ->relationship('category', 'name')
+                            ])
+                    ])->columns(2)->columnSpan(2),
+                Section::make('Content')
+                    ->schema([
+                        TagsInput::make('tags')
+                            ->nestedRecursiveRules([
+                                'min:3',
+                                'max:255',
+                            ]),
+                        Select::make('status')
+                            ->options([
+                                'draft' => 'Draft',
+                                'published' => 'Published',
+                                'Archived' => 'Archived',
+                            ])
+                            ->default('published')
+                            ->required()
+                            ->label('Status')
                     ])
-                    ->fileAttachmentsDirectory('attachments'),
-                TagsInput::make('tags')
-                    ->nestedRecursiveRules([
-                        'min:3',
-                        'max:255',
-                    ]),
-                Forms\Components\Select::make('status')
-                    ->options([
-                        'draft' => 'Draft',
-                        'published' => 'Published',
-                        'Archived' => 'Archived',
-                    ])
-                    ->default('published')
-                    ->required()
-                    ->label('Status'),
-                FileUpload::make('featured_image')
-                    ->label('Featured Image')
-                    ->image()
-                    ->mimeTypeMap([
-                        'webp' => 'image/webp',
-                        'avif' => 'image/avif',
-                    ])
-                    ->disk('public')
-                    ->directory('posts')
-                    ->preserveFilenames()
-                    ->visibility('public')
-                    ->imageEditor()
-                    ->imageEditorAspectRatios([
-                        null,
-                        '16:9',
-                        '4:3',
-                        '1:1',
-                    ]),
+                    ->columnSpan(1),
+                Section::make('Content')
+                    ->description('Write your post content here')
+                    ->schema([
+                        RichEditor::make('content')
+                            ->toolbarButtons([
+                                'attachFiles',
+                                'blockquote',
+                                'bold',
+                                'bulletList',
+                                'codeBlock',
+                                'h2',
+                                'h3',
+                                'italic',
+                                'link',
+                                'orderedList',
+                                'redo',
+                                'strike',
+                                'underline',
+                                'undo',
+                            ])->fileAttachmentsDirectory('attachments')
+                    ])->columnSpan(2),
+                Section::make('')
+                    ->schema([
+                        Toggle::make('is_featured')
+                            ->label('Featured Post')
+                            ->helperText('Check to mark this post as featured'),
+                        FileUpload::make('featured_image')
+                            ->label('Featured Image')
+                            ->image()
+                            ->mimeTypeMap([
+                                'webp' => 'image/webp',
+                                'avif' => 'image/avif',
+                            ])
+                            ->disk('public')
+                            ->directory('posts')
+                            ->preserveFilenames()
+                            ->visibility('public')
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                null,
+                                '16:9',
+                                '4:3',
+                                '1:1',
+                            ]),
+                        Textarea::make('excerpt')
+                            ->label('Excerpt')
+                            ->placeholder('Enter post excerpt')
+                            ->maxLength(70)
+                            ->rows(3)
+                            ->helperText('A short summary of the post content.'),
 
-
-            ]);
+                    ])->columnSpan(1),
+            ])->columns(3);
     }
-
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateDescription('Once you write your first post, it will appear here.')
+            ->emptyStateActions([
+                // Action::make('create')
+                //     ->label('Create post')
+                //     ->url(route('filament.resources.posts.create'))
+                //     ->icon('heroicon-m-plus')
+                //     ->button(),
+            ])
             ->columns([
+                //image
                 TextColumn::make('title')
                     ->sortable()
+                    ->description(fn(Post $record): string => $record->excerpt ?? '')
                     ->weight(FontWeight::Bold)
                     ->searchable()
+                    ->words(5)
+                    ->lineClamp(1)
                     ->label('Title')
                     ->copyable()
                     ->copyMessage('Title copied')
                     ->copyMessageDuration(1500),
-                TextColumn::make('slug')
-                    ->sortable()
-                    ->searchable()
-                    ->label('Slug'),
                 TextColumn::make('user.name')
                     ->sortable()
                     ->searchable()
                     ->label('Author'),
+                TextColumn::make('categories.name')
+                    ->sortable()
+                    ->searchable()
+                    ->badge()
+                    ->separator(',')
+                    ->label('Categories'),
+                ToggleColumn::make('is_featured')
+                    ->label('Featured'),
                 TextColumn::make('status')
                     ->sortable()
                     ->searchable()

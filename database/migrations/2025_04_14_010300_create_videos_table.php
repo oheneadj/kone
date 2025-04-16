@@ -18,13 +18,14 @@ return new class extends Migration
             $table->longText('description')->nullable();
             $table->string('url')->unique();
             $table->string('thumbnail')->nullable();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained();
             $table->enum('status', ['published', 'draft', 'archived'])
                 ->default('published');
-            $table->dateTime('published_at')->nullable();
+            $table->boolean('is_featured')->default(false);
             $table->integer('views')->default(0);
             $table->string('video_id')->unique();
             $table->string('video_type')->default('youtube');
+            $table->json('tags')->nullable();
             $table->timestamps();
         });
     }
