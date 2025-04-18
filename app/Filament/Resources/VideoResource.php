@@ -38,7 +38,10 @@ class VideoResource extends Resource
 {
     protected static ?string $model = Video::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-play';
+
+    protected static ?string $navigationGroup = 'Videos';
+
 
     public static function form(Form $form): Form
     {
@@ -54,32 +57,26 @@ class VideoResource extends Resource
                             ->maxLength(255)
                             ->unique(Video::class, 'url', ignoreRecord: true)
                             ->reactive()
-                            ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state) {
-
-                                $video_service = app(VideoServiceInterface::class);
-
+                    ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state) {
+                    //
+                    $video_service = app(VideoServiceInterface::class);
                                 $embed = new Embed();
                                 if (!$state) {
                                     return;
-                                }
-
+                    }
                                 if ($video_service->isAValidVideoUrl($state)) {
-                                    $info = $embed->get($state);
-
+                        $info = $embed->get($state);
                                     $set('title', $info->title);
-                                    $set('description', $info->description);
-
+                        $set('description', $info->description);
                                     try {
                                         $video_code = $video_service->extractVideoId($state);
                                         $set('video_id', $video_code);
                                     } catch (\Exception $e) {
                                         // Log the error or handle it as needed
                                         $set('video_id', null);
-                                    }
-
+                        }
                                     $set('video_id', $video_code);
-                                }
-
+                    }
                                 return;
                             }),
                         TextInput::make('video_id')
@@ -154,20 +151,20 @@ class VideoResource extends Resource
                     ])
                     ->columnSpan(1),
                 Section::make('Content')
-                    ->description('Write your post content here')
+                ->description('Write your video desctiption here')
                     ->schema([
                         Textarea::make('description')
                             ->required()
                             ->label('Description')
                             ->placeholder('Enter a video description')
-                            ->maxLength(65535)
+                    ->maxLength(225)
                             ->rows(5)
                             ->columnSpan(2),
                     ])->columnSpan(2),
                 Section::make('')
                     ->schema([
                         Toggle::make('is_featured')
-                            ->label('Featured Post')
+                    ->label('Featured video')
                             ->helperText('Check to mark this video as featured'),
                         FileUpload::make('thumbnail')
                             ->label('Video Thumbnail')
@@ -177,7 +174,7 @@ class VideoResource extends Resource
                                 'avif' => 'image/avif',
                             ])
                             ->disk('public')
-                            ->directory('posts')
+                    ->directory('videos')
                             ->preserveFilenames()
                             ->visibility('public')
                             ->imageEditor()
@@ -195,6 +192,10 @@ class VideoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->heading('Videos')
+            ->description('Manage your videos here.')
+            ->defaultSort('created_at', 'desc')
+
             ->columns([
                 TextColumn::make('video_id')
                     ->sortable()
@@ -202,6 +203,7 @@ class VideoResource extends Resource
                     ->label('Video ID'),
                 ImageColumn::make('thumbnail')
                     ->label('Thumbnail')
+                ->toggleable()
                     ->circular(),
                 TextColumn::make('title')
                     ->sortable()
@@ -211,11 +213,16 @@ class VideoResource extends Resource
                     ->words(5)
                     ->lineClamp(1)
                     ->label('Title')
-                    ->copyable()
+                ->toggleable()
+                ->url(fn(Video $record): string => $record->url ?? '')
+                ->openUrlInNewTab()
+                ->tooltip('Click to view video')
+                ->copyable()
                     ->copyMessage('Title copied')
                     ->copyMessageDuration(1500),
                 TextColumn::make('user.name')
                     ->sortable()
+                ->toggleable()
                     ->searchable()
                     ->label('Author'),
                 ToggleColumn::make('is_featured')
@@ -224,10 +231,12 @@ class VideoResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->badge()
+                ->toggleable()
                     ->separator(',')
                     ->label('Categories'),
                 TextColumn::make('video_type')
                     ->sortable()
+                ->toggleable()
                     ->searchable()
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
@@ -240,6 +249,7 @@ class VideoResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->badge()
+                ->toggleable()
                     ->separator(',')
                     ->label('Tags'),
                 TextColumn::make('views')
@@ -252,7 +262,7 @@ class VideoResource extends Resource
                     ->dateTime()
                     ->since()
                     ->dateTimeTooltip('l jS \of F Y h:i:s A')
-                    ->label('Published At')
+                ->label('Published On')
             ])
             ->filters([
                 //

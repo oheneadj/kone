@@ -22,6 +22,7 @@ class Post extends Model
         'tags',
         'status',
         'views',
+        'excerpt',
         'published_at',
     ];
 

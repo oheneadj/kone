@@ -36,7 +36,10 @@ class PostResource extends Resource
 {
     protected static ?string $model = Post::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-document-duplicate';
+
+    protected static ?string $navigationGroup = 'Posts';
+
 
     public static function form(Form $form): Form
     {
@@ -54,7 +57,7 @@ class PostResource extends Resource
                             ->reactive()
                             ->afterStateUpdated(function (callable $set, $state) {
                                 $set('slug', \Illuminate\Support\Str::slug($state));
-                            }),
+                    })->columnSpan(2),
                         TextInput::make('slug')
                             ->required()
                             ->readOnly()
@@ -158,9 +161,10 @@ class PostResource extends Resource
                         Textarea::make('excerpt')
                             ->label('Excerpt')
                             ->placeholder('Enter post excerpt')
-                            ->maxLength(70)
-                            ->rows(3)
-                            ->helperText('A short summary of the post content.'),
+                    ->maxLength(225)
+                    ->rows(6)
+
+                    ->helperText('A short summary of the post content.'),
 
                     ])->columnSpan(1),
             ])->columns(3);
@@ -168,6 +172,9 @@ class PostResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->heading('Posts')
+            ->description('Manage your posts here.')
+            ->defaultSort('created_at', 'desc')
             ->emptyStateDescription('Once you write your first post, it will appear here.')
             ->emptyStateActions([
                 // Action::make('create')
@@ -179,8 +186,7 @@ class PostResource extends Resource
             ->columns([
                 //image
                 TextColumn::make('title')
-                    ->sortable()
-                    ->description(fn(Post $record): string => $record->excerpt ?? '')
+                ->sortable()
                     ->weight(FontWeight::Bold)
                     ->searchable()
                     ->words(5)

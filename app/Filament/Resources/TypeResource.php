@@ -3,13 +3,12 @@
 namespace App\Filament\Resources;
 
 use Filament\Forms;
+use App\Models\Type;
 use Filament\Tables;
-use App\Models\Category;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 use Filament\Resources\Resource;
-use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Support\Enums\FontWeight;
@@ -19,65 +18,65 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
-use App\Filament\Resources\CategoryResource\Pages;
+use App\Filament\Resources\TypeResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\CategoryResource\RelationManagers;
-use App\Filament\Resources\CategoryResource\Pages\EditCategory;
-use App\Filament\Resources\CategoryResource\Pages\CreateCategory;
-use App\Filament\Resources\CategoryResource\Pages\ListCategories;
+use App\Filament\Resources\TypeResource\Pages\EditType;
+use App\Filament\Resources\TypeResource\Pages\ListTypes;
+use App\Filament\Resources\TypeResource\Pages\CreateType;
+use App\Filament\Resources\TypeResource\RelationManagers;
 
-class CategoryResource extends Resource
+class TypeResource extends Resource
 {
-    protected static ?string $model = Category::class;
+    protected static ?string $model = Type::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
+    protected static ?string $navigationIcon = 'heroicon-o-adjustments-horizontal';
 
-    protected static ?string $navigationGroup = 'Posts';
+    protected static ?string $navigationGroup = 'Providers';
 
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Section::make('Category')
-                    ->description('Create a new category')
+                Section::make('Type')
                     ->schema([
-                        TextInput::make('name')
+                        Forms\Components\TextInput::make('name')
                             ->required()
-                            ->label('Category Name')
-                            ->placeholder('Enter category name')
-                            ->maxLength(120)
-                            ->unique(Category::class, 'slug', ignoreRecord: true)
+                            ->unique(ignoreRecord: true)
+                            ->maxLength(255)
+                            ->unique(Type::class, 'name', ignoreRecord: true)
                             ->reactive()
                             ->afterStateUpdated(function (callable $set, $state) {
-                                $set('slug', \Illuminate\Support\Str::slug($state));
+                                $set('slug', Str::slug($state));
                             }),
-                        TextInput::make('slug')
+                        Forms\Components\TextInput::make('slug')
                             ->required()
                             ->readOnly()
-                            ->label('Slug')
-                            ->placeholder('slug')
-                            ->maxLength(255)
-                            ->unique(Category::class, 'slug', ignoreRecord: true),
-                        Select::make('category_id')
-                            ->label('Parent Category')
+                            ->unique(ignoreRecord: true)
+                            ->unique(Type::class, 'slug', ignoreRecord: true)
+                            ->maxLength(255),
+                        Select::make('type_id')
+                            ->label('Parent Type')
                             ->searchable()
-                            ->getSearchResultsUsing(fn(string $search): array => Category::where('name', 'like', "%{$search}%")->limit(50)->pluck('name', 'id')->toArray())
-                            ->getOptionLabelUsing(fn($value): ?string => Category::find($value)?->name),
-                    ])->columns(2)->columnSpan(2)
+                            ->options(Type::all()->pluck('name', 'id'))
+                            // ->relationship('type', 'name')
+                            ->placeholder('Select a parent type')
+                    ])->columnSpan(1)
+                    ->columns(1),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->heading('Categories')
-            ->description('Manage your categories here.')
+            ->heading('Types')
+            ->description('Manage your types here.')
             ->defaultSort('created_at', 'desc')
+            ->emptyStateDescription('Once you add your first type, it will appear here.')
             ->columns([
                 TextColumn::make('name')
                     ->sortable()
@@ -88,26 +87,23 @@ class CategoryResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->label('Slug'),
-                ToggleColumn::make('is_featured')
-                    ->label('Featured'),
-
-                TextColumn::make('category.name')
+                TextColumn::make('related_types.name')
                     ->sortable()
-                    ->searchable()
                     ->badge()
+                    ->color('success')
                     ->separator(',')
-                    ->label('Parent Categories'),
-                TextColumn::make('published_at')
+                    ->searchable()
+                    ->label('Parent Type'),
+                TextColumn::make('created_at')
                     ->sortable()
                     ->searchable()
                     ->dateTime()
                     ->since()
                     ->dateTimeTooltip('l jS \of F Y h:i:s A')
-                    ->label('Published At'),
+                    ->label('Published At')
             ])
             ->filters([
-            Filter::make('is_featured')
-                ->toggle()
+                //
             ])
             ->actions([
                 ActionGroup::make([
@@ -133,9 +129,9 @@ class CategoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCategories::route('/'),
-            'create' => Pages\CreateCategory::route('/create'),
-            'edit' => Pages\EditCategory::route('/{record}/edit'),
+            'index' => Pages\ListTypes::route('/'),
+            'create' => Pages\CreateType::route('/create'),
+            'edit' => Pages\EditType::route('/{record}/edit'),
         ];
     }
 }

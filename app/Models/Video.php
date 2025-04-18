@@ -20,6 +20,7 @@ class Video extends Model
         'user_id',
         'status',
         'published_at',
+        'is_featured',
         'views',
         'video_id',
         'video_type',

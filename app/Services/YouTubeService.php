@@ -15,7 +15,17 @@ class YouTubeService implements VideoServiceInterface
         $host = parse_url($url, PHP_URL_HOST);
         $host = strtolower($host);
 
-        return str_contains($host, 'youtube.com') || str_contains($host, 'youtu.be');
+        //check if the link is a valid youtube video url
+        if (str_contains($host, 'youtube.com')) {
+            $path = parse_url($url, PHP_URL_PATH);
+            return str_contains($path, '/watch') || str_contains($path, '/embed');
+        }
+        if (str_contains($host, 'youtu.be')) {
+            $path = parse_url($url, PHP_URL_PATH);
+            return str_contains($path, '/');
+        }
+
+        // return str_contains($host, 'youtube.com') || str_contains($host, 'youtu.be');
     }
 
     public function extractVideoId(string $url): ?string
