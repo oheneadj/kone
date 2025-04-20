@@ -57,6 +57,7 @@ class VideoResource extends Resource
                             ->maxLength(255)
                             ->unique(Video::class, 'url', ignoreRecord: true)
                             ->reactive()
+                    ->live(onBlur: true)
                     ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state) {
                     //
                     $video_service = app(VideoServiceInterface::class);
@@ -119,6 +120,7 @@ class VideoResource extends Resource
                                     ->maxLength(120)
                                     ->unique(Category::class, 'slug', ignoreRecord: true)
                                     ->reactive()
+                        ->live(onBlur: true)
                                     ->afterStateUpdated(function (callable $set, $state) {
                                         $set('slug', \Illuminate\Support\Str::slug($state));
                                     }),

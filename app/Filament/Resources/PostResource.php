@@ -55,6 +55,7 @@ class PostResource extends Resource
                             ->maxLength(255)
                             ->unique(Post::class, 'slug', ignoreRecord: true)
                             ->reactive()
+                    ->live(onBlur: true)
                             ->afterStateUpdated(function (callable $set, $state) {
                                 $set('slug', \Illuminate\Support\Str::slug($state));
                     })->columnSpan(2),
@@ -80,6 +81,7 @@ class PostResource extends Resource
                                     ->maxLength(120)
                                     ->unique(Category::class, 'slug', ignoreRecord: true)
                                     ->reactive()
+                        ->live(onBlur: true)
                                     ->afterStateUpdated(function (callable $set, $state) {
                                         $set('slug', \Illuminate\Support\Str::slug($state));
                                     }),

@@ -50,12 +50,13 @@ class ProviderResource extends Resource
                         TextInput::make('name')
                             ->required()
                             ->label('Provider Name')
-                            ->live()
-                            ->debounce(1100)
-                            ->placeholder('Enter provider name')
+                    ->live(onBlur: true)
+
+                    ->placeholder('Enter provider name')
                             ->maxLength(120)
                             ->unique(Provider::class, 'name', ignoreRecord: true)
                             ->reactive()
+                    ->live(onBlur: true)
                             ->afterStateUpdated(function (callable $set, $state) {
                                 $set('slug', \Illuminate\Support\Str::slug($state));
                             }),

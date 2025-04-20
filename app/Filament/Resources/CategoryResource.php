@@ -53,6 +53,7 @@ class CategoryResource extends Resource
                             ->maxLength(120)
                             ->unique(Category::class, 'slug', ignoreRecord: true)
                             ->reactive()
+                    ->live(onBlur: true)
                             ->afterStateUpdated(function (callable $set, $state) {
                                 $set('slug', \Illuminate\Support\Str::slug($state));
                             }),

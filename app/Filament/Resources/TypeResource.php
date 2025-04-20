@@ -50,6 +50,7 @@ class TypeResource extends Resource
                             ->maxLength(255)
                             ->unique(Type::class, 'name', ignoreRecord: true)
                             ->reactive()
+                    ->live(onBlur: true)
                             ->afterStateUpdated(function (callable $set, $state) {
                                 $set('slug', Str::slug($state));
                             }),
